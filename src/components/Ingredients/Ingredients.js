@@ -1,19 +1,51 @@
-import React from 'react';
+import React, { useState } from "react";
 
-import IngredientForm from './IngredientForm';
-import Search from './Search';
+import IngredientForm from "./IngredientForm";
+import IngredientList from "./IngredientList";
+import Search from "./Search";
 
-function Ingredients() {
+const Ingredients = () => {
+  const [ingredientsState, setIngredientsState] = useState([]);
+
+  const addIngredientHandler = (ingredient) => {
+    fetch(
+      "https://react-hooks-update-2c077-default-rtdb.firebaseio.com/ingredients.json",
+      {
+        method: "POST",
+        body: JSON.stringify(ingredient),
+        headers: { "Content-Type": "application/json" },
+      }
+    )
+      .then((response) => {
+        return response.json();
+      })
+      .then((responseData) => {
+        setIngredientsState((prevState) => [
+          ...prevState,
+          { id: responseData.name, ...ingredient },
+        ]);
+      });
+  };
+
+  const removeIngredientHandler = (id) => {
+    setIngredientsState((prevState) =>
+      prevState.filter((ing) => ing.id !== id)
+    );
+  };
+
   return (
     <div className="App">
-      <IngredientForm />
+      <IngredientForm onAddIngredient={addIngredientHandler} />
 
       <section>
         <Search />
-        {/* Need to add list here! */}
+        <IngredientList
+          ingredients={ingredientsState}
+          onRemoveItem={removeIngredientHandler}
+        />
       </section>
     </div>
   );
-}
+};
 
 export default Ingredients;
